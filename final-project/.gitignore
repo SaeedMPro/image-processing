@@ -1,0 +1,25 @@
+# Build / install
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

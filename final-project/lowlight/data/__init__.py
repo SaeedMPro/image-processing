@@ -1,4 +1,4 @@
-"""Data loading and preprocessing (Proposal §2, §3)."""
+"""Data loading and preprocessing."""
 
 from lowlight.data.discovery import discover_pairs
 from lowlight.data.preprocess import (

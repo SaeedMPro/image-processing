@@ -1,6 +1,6 @@
 """
 Dataset discovery: find paired low/normal images by numeric id in filenames.
-Proposal §2: 80–120 paired images from LOL-v2 Real (data/low, data/normal).
+Expects data/low and data/normal with matching numeric IDs (e.g. low00001.png, normal00001.png).
 """
 
 import re

@@ -1,4 +1,4 @@
-"""Feature extraction for Phase 1 (Proposal §4.1): handcrafted features only."""
+"""Handcrafted feature extraction (mean, std, entropy, skewness from grayscale)."""
 
 from lowlight.features.handcrafted import extract_features, extract_features_batch
 

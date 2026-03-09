@@ -1,9 +1,3 @@
-"""
-Dataset validation (Step 1). Proposal: 80–120 paired images.
-Run from project root: python scripts/check_data.py
-Uses the lowlight package for discovery; requires opencv for shape check.
-"""
-
 import sys
 from pathlib import Path
 
@@ -20,7 +14,6 @@ from lowlight.data import discover_pairs
 
 
 def check_image_shape(image_path: str) -> tuple:
-    """Load image and return shape (H, W, C). Requires opencv-python."""
     img = cv2.imread(image_path)
     if img is None:
         raise FileNotFoundError(f"Could not load {image_path}")
@@ -36,7 +29,7 @@ def main() -> None:
     pairs, low_only, normal_only = discover_pairs(str(data_root))
     n_pairs = len(pairs)
 
-    print("=== Dataset check (Proposal: 80–120 paired images) ===\n")
+    print("=== Dataset check (80–120 paired images) ===\n")
     print(f"Total pairs found: {n_pairs}")
     print(f"Low-only IDs (no normal): {len(low_only)} — {low_only[:5]}{'...' if len(low_only) > 5 else ''}")
     print(f"Normal-only IDs (no low): {len(normal_only)} — {normal_only[:5]}{'...' if len(normal_only) > 5 else ''}\n")

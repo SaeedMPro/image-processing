@@ -1,6 +1,6 @@
 """
 Preprocessing: load, resize, normalize, optional augmentation.
-Proposal §3: Resize to fixed resolution; normalize [0,1]; optional horizontal flip or small rotation.
+Resize to fixed resolution; normalize to [0,1]; optional horizontal flip or small rotation.
 """
 
 from typing import List, Optional, Tuple
@@ -26,22 +26,22 @@ def load_image(path: str, as_rgb: bool = True) -> np.ndarray:
 
 
 def resize_image(img: np.ndarray, target_size: Tuple[int, int]) -> np.ndarray:
-    """Resize to (height, width). Proposal: fixed resolution e.g. 256×256."""
+    """Resize to (height, width)."""
     return cv2.resize(img, (target_size[1], target_size[0]), interpolation=cv2.INTER_LINEAR)
 
 
 def normalize_01(img: np.ndarray) -> np.ndarray:
-    """Scale pixel values to [0, 1]. Proposal: required preprocessing."""
+    """Scale pixel values to [0, 1]."""
     return img.astype(np.float64) / 255.0
 
 
 def _augment_flip(img: np.ndarray) -> np.ndarray:
-    """Horizontal flip. Proposal: allowed augmentation."""
+    """Horizontal flip."""
     return np.flip(img, axis=1).copy()
 
 
 def _augment_rotate(img: np.ndarray, angle_deg: float, border_value: float = 0.0) -> np.ndarray:
-    """Small rotation. Proposal: allowed augmentation."""
+    """Small rotation."""
     h, w = img.shape[:2]
     M = cv2.getRotationMatrix2D((w / 2, h / 2), angle_deg, 1.0)
     return cv2.warpAffine(img, M, (w, h), borderValue=border_value)

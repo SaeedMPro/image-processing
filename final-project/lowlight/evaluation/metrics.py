@@ -1,6 +1,5 @@
 """
-Phase 3 quantitative metrics (Proposal §4.3).
-PSNR and SSIM as defined in the proposal (MAX_I=255, K1=0.01, K2=0.03).
+Quantitative metrics: PSNR and SSIM. MAX_I=255, K1=0.01, K2=0.03.
 """
 
 import numpy as np
@@ -12,7 +11,7 @@ try:
 except ImportError:
     HAS_SKIMAGE = False
 
-# Proposal constants
+# Standard constants for PSNR/SSIM
 MAX_I = 255.0
 K1 = 0.01
 K2 = 0.03
@@ -32,8 +31,7 @@ def _to_float_0_255(img: np.ndarray) -> np.ndarray:
 
 def psnr(enhanced: np.ndarray, reference: np.ndarray) -> float:
     """
-    PSNR (Proposal §4.3). Higher = better. In dB.
-    PSNR = 10 * log10(MAX_I^2 / MSE).
+    PSNR in dB. Higher = better. PSNR = 10 * log10(MAX_I^2 / MSE).
     Inputs: enhanced and reference (H,W,C) or (H,W), [0,1] or [0,255].
     """
     e = _to_float_0_255(enhanced)
@@ -46,7 +44,7 @@ def psnr(enhanced: np.ndarray, reference: np.ndarray) -> float:
 
 def ssim(enhanced: np.ndarray, reference: np.ndarray, channel_axis: int = -1) -> float:
     """
-    SSIM (Proposal §4.3). Range ~[-1,1], typically [0,1]. 1 = identical.
+    SSIM. Range ~[-1,1], typically [0,1]. 1 = identical.
     Uses skimage if available (same formula with C1, C2); else simple global implementation.
     Inputs: enhanced, reference (H,W,C); channel_axis for multichannel.
     """
@@ -61,7 +59,7 @@ def ssim(enhanced: np.ndarray, reference: np.ndarray, channel_axis: int = -1) ->
 
 
 def _ssim_single(x: np.ndarray, y: np.ndarray, win_size: int = 7) -> float:
-    """Single-channel SSIM with constants from proposal."""
+    """Single-channel SSIM."""
     x = x.astype(np.float64)
     y = y.astype(np.float64)
     from scipy.ndimage import uniform_filter

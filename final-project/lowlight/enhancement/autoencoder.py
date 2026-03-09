@@ -1,6 +1,5 @@
 """
-Phase 2B: Lightweight convolutional autoencoder (Proposal §4.2 Part B).
-3–4 conv layers, MSE loss only, 20–30 epochs, no GANs/perceptual loss.
+Lightweight convolutional autoencoder for low-light enhancement. MSE loss, modest number of epochs.
 """
 
 from pathlib import Path
@@ -33,8 +32,7 @@ if HAS_TORCH:
 
     class LightweightAE(nn.Module):
         """
-        Simple conv autoencoder. Proposal: 3–4 convolutional layers, MSE only.
-        Encoder: 3 -> 32 -> 64 -> 128 (3 conv). Decoder: 128 -> 64 -> 32 -> 3 (3 conv).
+        Simple conv autoencoder. Encoder: 3 -> 32 -> 64 -> 128. Decoder: 128 -> 64 -> 32 -> 3.
         """
 
         def __init__(self, in_channels: int = 3):
@@ -78,8 +76,7 @@ if HAS_TORCH:
         batch_size: int = 8,
     ) -> Tuple["nn.Module", list]:
         """
-        Train AE to map low -> normal. Proposal: MSE loss, 20–30 epochs.
-        low_imgs, normal_imgs: (N,H,W,C) float [0,1].
+        Train AE to map low -> normal. low_imgs, normal_imgs: (N,H,W,C) float [0,1].
         Returns: trained model, list of per-epoch MSE losses.
         """
         if device is None:

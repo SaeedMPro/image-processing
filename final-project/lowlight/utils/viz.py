@@ -40,7 +40,6 @@ def plot_enhancement_comparison(
 ) -> None:
     """
     Plot: low | enhanced_1 | ... | enhanced_k | reference.
-    For Phase 3 visual comparison (Proposal §4.3).
     """
     n = 2 + len(enhanced_list)
     if figsize is None:

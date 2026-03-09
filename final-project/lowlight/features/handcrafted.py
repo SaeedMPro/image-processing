@@ -1,6 +1,6 @@
 """
-Phase 1 handcrafted features (Proposal §4.1).
-From grayscale: Mean Intensity, Standard Deviation (Contrast), Entropy, Histogram Skewness.
+Handcrafted features from grayscale: mean intensity, standard deviation (contrast),
+entropy, and histogram skewness.
 """
 
 from typing import List
@@ -22,8 +22,7 @@ def _to_grayscale(img: np.ndarray) -> np.ndarray:
 
 def extract_features(img: np.ndarray) -> np.ndarray:
     """
-    Extract Phase 1 features from one image (grayscale).
-    Proposal §4.1: Mean Intensity, Std (Contrast), Entropy, Histogram Skewness.
+    Extract features from one image (grayscale): mean, std, entropy, skewness.
     Inputs: img (H,W) or (H,W,C), float [0,1] or uint8 [0,255].
     Outputs: shape (4,) [mean, std, entropy, skewness].
     """

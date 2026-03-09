@@ -1,7 +1,6 @@
 """
-Phase 2A: Classical enhancement methods (Proposal §4.2 Part A).
-At least three of: Histogram Equalization, CLAHE, Gamma Correction, Single-Scale Retinex.
-Implemented with OpenCV/NumPy.
+Classical enhancement methods: Histogram Equalization, CLAHE, Gamma Correction,
+Single-Scale Retinex. Implemented with OpenCV/NumPy.
 """
 
 from typing import Tuple
@@ -26,8 +25,8 @@ def _ensure_float01(img: np.ndarray) -> np.ndarray:
 
 def enhance_histogram_equalization(img: np.ndarray) -> np.ndarray:
     """
-    Global histogram equalization. Proposal: one of ≥3 classical methods.
-    Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) same dtype as input convention (float [0,1]).
+    Global histogram equalization on L channel (LAB). Input: (H,W,C) float [0,1] or uint8.
+    Output: (H,W,C) float [0,1].
     """
     out = _ensure_uint8(img)
     if out.ndim == 3:
@@ -45,8 +44,7 @@ def enhance_clahe(
     tile_grid_size: Tuple[int, int] = (8, 8),
 ) -> np.ndarray:
     """
-    CLAHE on L channel (LAB). Proposal: one of ≥3 classical methods.
-    Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
+    CLAHE on L channel (LAB). Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
     """
     out = _ensure_uint8(img)
     if out.ndim == 3:
@@ -62,8 +60,7 @@ def enhance_clahe(
 
 def enhance_gamma(img: np.ndarray, gamma: float) -> np.ndarray:
     """
-    Gamma correction: I_out = I_in^gamma. Proposal: one of ≥3, with parameter sensitivity analysis.
-    Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
+    Gamma correction: I_out = I_in^gamma. Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
     """
     out = _ensure_float01(img)
     out = np.power(out, gamma)
@@ -72,7 +69,7 @@ def enhance_gamma(img: np.ndarray, gamma: float) -> np.ndarray:
 
 def enhance_ssr(img: np.ndarray, sigma: float = 30.0) -> np.ndarray:
     """
-    Single-Scale Retinex: R = log(I) - log(L), L = Gaussian(I). Proposal: one of ≥3 classical methods.
+    Single-Scale Retinex: R = log(I) - log(L), L = Gaussian(I).
     Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
     """
     out = _ensure_float01(img)

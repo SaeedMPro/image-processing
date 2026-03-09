@@ -18,7 +18,7 @@ MIN_PAIRS = 80
 MAX_PAIRS = 120
 
 # Autoencoder training
-AE_EPOCHS = 25
+AE_EPOCHS = 30
 AE_LOSS = "mse"
 
 

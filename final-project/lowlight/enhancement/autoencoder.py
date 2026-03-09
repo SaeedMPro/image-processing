@@ -32,19 +32,19 @@ if HAS_TORCH:
 
     class LightweightAE(nn.Module):
         """
-        Simple conv autoencoder. Encoder: 3 -> 32 -> 64 -> 128. Decoder: 128 -> 64 -> 32 -> 3.
+        Conv autoencoder with skip connections (U-Net style) for better reconstruction.
+        Encoder: 3 -> 32 -> 64 -> 128. Decoder receives skip from encoder for higher PSNR/SSIM.
         """
 
         def __init__(self, in_channels: int = 3):
             super().__init__()
-            # Encoder: 3 conv layers
             self.enc1 = ConvBlock(in_channels, 32)   # -> 32
             self.enc2 = ConvBlock(32, 64)             # -> 64
-            self.enc3 = ConvBlock(64, 128)            # -> 128
-            self.pool = nn.MaxPool2d(2, 2)           # optional; we keep spatial with stride 1
+            self.enc3 = ConvBlock(64, 128)           # -> 128
 
-            self.dec1 = nn.Conv2d(128, 64, 3, padding=1)
-            self.dec2 = nn.Conv2d(64, 32, 3, padding=1)
+            # Decoder with skip: dec1 in = 128 + 64 (skip), dec2 in = 64 + 32 (skip), dec3 in = 32
+            self.dec1 = nn.Conv2d(128 + 64, 64, 3, padding=1)
+            self.dec2 = nn.Conv2d(64 + 32, 32, 3, padding=1)
             self.dec3 = nn.Conv2d(32, in_channels, 3, padding=1)
             self.relu = nn.ReLU(inplace=True)
 
@@ -52,16 +52,18 @@ if HAS_TORCH:
             e1 = self.enc1(x)
             e2 = self.enc2(e1)
             e3 = self.enc3(e2)
-            return e3
+            return e1, e2, e3
 
-        def decode(self, z):
-            d1 = self.relu(self.dec1(z))
-            d2 = self.relu(self.dec2(d1))
+        def decode(self, z, e2, e1):
+            # z is e3 (128 ch). Concatenate e2 as skip and decode to 64
+            d1 = self.relu(self.dec1(torch.cat([z, e2], dim=1)))
+            d2 = self.relu(self.dec2(torch.cat([d1, e1], dim=1)))
             out = self.dec3(d2)
             return torch.sigmoid(out)
 
         def forward(self, x):
-            return self.decode(self.encode(x))
+            e1, e2, e3 = self.encode(x)
+            return self.decode(e3, e2, e1)
 
     def build_autoencoder(in_channels: int = 3) -> "nn.Module":
         """Build the lightweight AE model."""
@@ -84,6 +86,9 @@ if HAS_TORCH:
         device = torch.device(device)
         model = build_autoencoder(in_channels=low_imgs.shape[-1]).to(device)
         opt = torch.optim.Adam(model.parameters(), lr=lr)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            opt, mode="min", factor=0.5, patience=5, min_lr=1e-5
+        )
         criterion = nn.MSELoss()
         # (N,H,W,C) -> (N,C,H,W)
         low_t = torch.from_numpy(np.ascontiguousarray(low_imgs.transpose(0, 3, 1, 2))).float().to(device)
@@ -94,6 +99,7 @@ if HAS_TORCH:
             model.train()
             perm = torch.randperm(n, device=device)
             epoch_loss = 0.0
+            n_batches = 0
             for start in range(0, n, batch_size):
                 idx = perm[start : start + batch_size]
                 x = low_t[idx]
@@ -104,7 +110,10 @@ if HAS_TORCH:
                 loss.backward()
                 opt.step()
                 epoch_loss += loss.item()
-            losses.append(epoch_loss / max(1, (n + batch_size - 1) // batch_size))
+                n_batches += 1
+            mean_loss = epoch_loss / max(1, n_batches)
+            losses.append(mean_loss)
+            scheduler.step(mean_loss)
         return model, losses
 
     def predict_autoencoder(model: "nn.Module", low_imgs: np.ndarray, device: Optional[str] = None) -> np.ndarray:

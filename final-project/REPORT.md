@@ -49,17 +49,17 @@ These four values form a feature vector per image. We stack features from all lo
 
 **Classical methods (Part A):**
 
-1. **Histogram Equalization (HE)** — Global equalization of the intensity histogram to spread values over the full range. Applied on the L channel in LAB space to avoid color shift; then converted back to RGB.
-2. **CLAHE (Contrast Limited Adaptive Histogram Equalization)** — Local histogram equalization with clipping to limit noise amplification. Applied on the L channel in LAB; clip limit 2.0 and tile grid (8×8) by default.
-3. **Gamma Correction** — Nonlinear mapping *I_out = I_in^γ*. With *γ < 1* we brighten dark regions. We use *γ = 2.0* as a typical value; the effect of *γ* can be analyzed in a parameter study.
-4. **Single-Scale Retinex (SSR)** — Model: *R = log(I) − log(L)*, where *L* is a Gaussian-smoothed version of *I*. Recovers a “reflectance” image that is less dependent on illumination. We use one scale (e.g. *σ = 30*) and normalize the result to [0, 1].
+1. **Histogram Equalization (HE)** — Global equalization of the intensity histogram to spread values over the full range. Applied on the L channel in LAB space to avoid color shift; then converted back to RGB. No tunable parameters in the notebook.
+2. **CLAHE (Contrast Limited Adaptive Histogram Equalization)** — Local histogram equalization with clipping to limit noise amplification. Applied on the L channel in LAB. **Default parameters:** clip limit 2.5, tile grid (4×4). See Section 6 for how to change them.
+3. **Gamma Correction** — Nonlinear mapping *I_out = I_in^γ*. With *γ < 1* we brighten dark regions; with *γ > 1* we darken. **Default:** *γ = 0.5* for brightening. Tunable in the notebook (Section 6).
+4. **Single-Scale Retinex (SSR)** — Model: *R = log(I) − log(L)*, where *L* is a Gaussian-smoothed version of *I*. **Default:** *σ = 20*. Tunable in the notebook (Section 6).
 
 All classical methods are implemented with OpenCV/NumPy. Inputs and outputs are in [0, 1] (float) for consistency with the rest of the pipeline.
 
 **Autoencoder (Part B):**
 
-- **Architecture:** Convolutional encoder–decoder. Encoder: three blocks (e.g. 3 → 32 → 64 → 128 channels), each with conv + batch norm + ReLU. Decoder: three conv layers (128 → 64 → 32 → 3) with ReLU and final sigmoid. No pooling that would reduce spatial size; the map stays full resolution.
-- **Training:** Input = low-light image, target = normal-light image (same pair). Loss = MSE between output and target. Optimizer: Adam, learning rate 1e-3, batch size 8, 25 epochs (within the 20–30 range). No GANs, no perceptual loss.
+- **Architecture:** Convolutional encoder–decoder with **skip connections** (U-Net style): encoder 3 → 32 → 64 → 128; decoder receives encoder features at each stage for better reconstruction. Final sigmoid keeps output in [0, 1].
+- **Training:** Input = low-light image, target = normal-light image (same pair). Loss = MSE. Optimizer: Adam, learning rate 1e-3, **ReduceLROnPlateau** scheduler (factor 0.5, patience 5). Batch size 8, **30 epochs** (configurable in `lowlight/config.py` as `AE_EPOCHS`). No GANs, no perceptual loss.
 - **Inference:** The model takes a low-light image and outputs an enhanced image in [0, 1].
 
 ### 2.4 Phase 3: Evaluation metrics
@@ -100,7 +100,7 @@ The confusion matrix figure is saved as `figures/phase1_confusion_matrix.png`. I
 ### 4.2 Phase 2: Enhancement
 
 - **Classical methods:** HE, CLAHE, Gamma, and SSR all produce visibly brighter and often higher-contrast images. HE can over-enhance and amplify noise; CLAHE tends to look more natural due to local adaptation. Gamma is simple and predictable; SSR can reduce illumination effects but may introduce halos or look unnatural if the scale is not tuned.
-- **Autoencoder:** After 25 epochs, the training MSE decreases. On test images, the autoencoder produces smoother, often more “averaged” results than some classical methods. It does not use perceptual or adversarial losses, so fine detail and sharpness are limited by the MSE objective.
+- **Autoencoder:** After 30 epochs (with LR scheduler and skip connections), the training MSE decreases. On test images, the autoencoder can achieve competitive or better PSNR/SSIM than classical methods when the test set is similar to the training distribution. Skip connections help preserve detail; the MSE objective still limits perceptual sharpness compared to GAN-based methods.
 
 A visual comparison for one test image (low | HE | CLAHE | Gamma | SSR | Autoencoder | reference) is saved as `figures/phase2_comparison.png`.
 

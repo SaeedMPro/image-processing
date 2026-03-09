@@ -40,8 +40,8 @@ def enhance_histogram_equalization(img: np.ndarray) -> np.ndarray:
 
 def enhance_clahe(
     img: np.ndarray,
-    clip_limit: float = 2.0,
-    tile_grid_size: Tuple[int, int] = (8, 8),
+    clip_limit: float = 2.5,
+    tile_grid_size: Tuple[int, int] = (4, 4),
 ) -> np.ndarray:
     """
     CLAHE on L channel (LAB). Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
@@ -67,7 +67,7 @@ def enhance_gamma(img: np.ndarray, gamma: float) -> np.ndarray:
     return np.clip(out, 0, 1).astype(np.float64)
 
 
-def enhance_ssr(img: np.ndarray, sigma: float = 30.0) -> np.ndarray:
+def enhance_ssr(img: np.ndarray, sigma: float = 20.0) -> np.ndarray:
     """
     Single-Scale Retinex: R = log(I) - log(L), L = Gaussian(I).
     Input: (H,W,C) float [0,1] or uint8. Output: (H,W,C) float [0,1].
